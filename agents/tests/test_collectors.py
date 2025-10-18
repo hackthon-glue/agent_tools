@@ -12,6 +12,7 @@ from collectors import (
     JobMarketSearchCollector,
     GitHubCollector,
     LinkedInCollector,
+    PersonalActivitiesCollector,
 )
 
 CANDIDATE = "Shota Hirabayashi"
@@ -36,6 +37,31 @@ def test_candidate_search():
 
     assert result.get("candidate_name") == CANDIDATE
     assert "note" in result or "linkedin_profile_search" in result
+
+
+def test_candidate_search_with_context():
+    """Test candidate search with context to identify correct person"""
+    print("\n" + "=" * 60)
+    print("TEST: Candidate Search with Context (Same Name Disambiguation)")
+    print("=" * 60)
+
+    collector = CandidateSearchCollector(region="us-west-2")
+    result = collector.search(
+        CANDIDATE, 
+        company=COMPANY, 
+        job_title=JOB, 
+        location=LOCATION
+    )
+
+    print(f"✅ Candidate: {result.get('candidate_name')}")
+    print(f"🏯 Context: {result.get('search_context', 'N/A')}")
+    print(f"🔗 LinkedIn Search: {result.get('linkedin_profile_search', 'N/A')}")
+    print(f"💻 GitHub Search: {result.get('github_profile_search', 'N/A')}")
+    print(f"🌐 Google Search: {result.get('google_search_url', 'N/A')}")
+
+    assert result.get("candidate_name") == CANDIDATE
+    assert "search_context" in result
+    assert COMPANY in result.get("search_context", "")
 
 
 def test_company_search():
@@ -120,12 +146,36 @@ def test_linkedin_validation():
         assert result.get("valid") == True
 
 
+def test_personal_activities():
+    """Test personal activities search (blogs, talks, OSS, publications)"""
+    print("\n" + "=" * 60)
+    print("TEST: Personal Activities Search")
+    print("=" * 60)
+
+    collector = PersonalActivitiesCollector(region="us-west-2")
+    result = collector.search(CANDIDATE, company=COMPANY, job_title=JOB)
+
+    print(f"✅ Candidate: {result.get('candidate_name')}")
+    print(f"🏯 Context: {result.get('search_context', 'N/A')}")
+    print(f"📝 Blog: {result.get('blog_search_url', 'N/A')}")
+    print(f"🎤 Speaking: {result.get('speaking_search_url', 'N/A')}")
+    print(f"📦 OSS: {result.get('oss_contributions_url', 'N/A')}")
+    print(f"📚 Publications: {result.get('publications_search_url', 'N/A')}")
+    print(f"👥 Community: {result.get('community_activities_url', 'N/A')}")
+    print(f"🌐 Portfolio: {result.get('portfolio_search_url', 'N/A')}")
+
+    assert result.get("candidate_name") == CANDIDATE
+    assert "note" in result or "blog_search_url" in result
+
+
 if __name__ == "__main__":
     print("\n🚀 AgentCore Data Collection Test")
     print("=" * 60)
 
     try:
         test_candidate_search()
+        test_candidate_search_with_context()
+        test_personal_activities()
         test_company_search()
         test_job_market_search()
         test_github_api()

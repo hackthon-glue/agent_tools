@@ -6,6 +6,7 @@ from .linkedin import LinkedInCollector
 from .github import GitHubCollector
 from .company import CompanySearchCollector
 from .job_market import JobMarketSearchCollector
+from .personal_activities import PersonalActivitiesCollector
 from .service import RecruitmentDataCollectionService, collect_candidate_data
 
 __all__ = [
@@ -15,6 +16,7 @@ __all__ = [
     "GitHubCollector",
     "CompanySearchCollector",
     "JobMarketSearchCollector",
+    "PersonalActivitiesCollector",
     "RecruitmentDataCollectionService",
     "collect_candidate_data",
 ]
