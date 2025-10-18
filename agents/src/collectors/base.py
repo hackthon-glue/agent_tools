@@ -40,7 +40,14 @@ class BaseBrowserCollector(ABC):
                 system_prompt=self.SYSTEM_PROMPT,
             )
         except Exception as e:
-            print(f"⚠️  Browser init failed: {e}")
+            error_msg = str(e)
+            if "UnrecognizedClientException" in error_msg or "security" in error_msg.lower():
+                print(f"⚠️  AWS authentication failed. Please configure:")
+                print(f"   1. AWS credentials: aws configure")
+                print(f"   2. IAM permissions for bedrock-agentcore and bedrock:InvokeModel")
+                print(f"   3. Enable Claude Sonnet 4.0 in Bedrock console")
+            else:
+                print(f"⚠️  Browser init failed: {error_msg[:100]}")
             self.browser = None
             self.agent = None
 
@@ -72,44 +79,12 @@ class BaseBrowserCollector(ABC):
         except:
             return [] if return_type == list else {}
 
-    def _calculate_sentiment(self, text: str) -> float:
-        """Calculate sentiment score from text"""
-        lower = text.lower()
-        positive = [
-            "success",
-            "win",
-            "growth",
-            "improve",
-            "positive",
-            "breakthrough",
-            "victory",
-            "achievement",
-            "gain",
-            "celebration",
-        ]
-        negative = [
-            "crisis",
-            "fail",
-            "death",
-            "war",
-            "conflict",
-            "disaster",
-            "crash",
-            "decline",
-            "loss",
-            "scandal",
-            "controversy",
-        ]
-
-        score = sum(0.3 for w in positive if w in lower)
-        score -= sum(0.3 for w in negative if w in lower)
-        return max(-1.0, min(1.0, score))
-
     def _scrape_with_browser(self, prompt: str) -> List[Dict]:
         """Generic browser scraping method"""
         self._ensure_browser()
 
         if not self.agent:
+            print("⚠️  Browser not initialized - check AWS credentials and Bedrock access")
             return []
 
         try:
