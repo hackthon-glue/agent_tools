@@ -8,6 +8,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from collectors import RecruitmentDataCollectionService, collect_candidate_data
 
+# Test candidate information
+CANDIDATE = "Shota Hirabayashi"
+COMPANY = "Accenture"
+JOB = "Software Engineer"
+LOCATION = "Japan"
+LINKEDIN_URL = "https://www.linkedin.com/in/shotahirabayashi"
+GITHUB_USERNAME = "shotahirabayashi"
+
 
 def test_service_full_workflow():
     """Test complete candidate data collection workflow"""
@@ -22,27 +30,36 @@ def test_service_full_workflow():
     )
     
     result = service.collect_candidate_info(
-        candidate_name="Satya Nadella",
-        linkedin_url="https://www.linkedin.com/in/satyanadella",
-        github_username="microsoft",
-        company="Microsoft"
+        candidate_name=CANDIDATE,
+        linkedin_url=LINKEDIN_URL,
+        github_username=GITHUB_USERNAME,
+        company=COMPANY,
+        job_title=JOB,
+        location=LOCATION
     )
     
     # Verify structure
     assert "candidate_name" in result
+    assert result["candidate_name"] == CANDIDATE
     assert "collection_timestamp" in result
     assert "api_status" in result
+    assert "search_context" in result
     assert "linkedin" in result
     assert "github" in result
     assert "candidate_search" in result
+    assert "personal_activities" in result
     assert "company_info" in result
     
     print(f"\n✅ Candidate: {result['candidate_name']}")
+    print(f"🏢 Company: {result.get('search_context', {}).get('company', 'N/A')}")
+    print(f"💼 Job Title: {result.get('search_context', {}).get('job_title', 'N/A')}")
+    print(f"📍 Location: {result.get('search_context', {}).get('location', 'N/A')}")
     print(f"⏰ Timestamp: {result['collection_timestamp']}")
     print(f"📊 API Status: {result['api_status']}")
     print(f"🔗 LinkedIn: {bool(result['linkedin'])}")
     print(f"💻 GitHub: {bool(result['github'])}")
     print(f"🔍 Candidate Search: {bool(result['candidate_search'])}")
+    print(f"🌟 Personal Activities: {bool(result['personal_activities'])}")
     print(f"🏢 Company Info: {bool(result['company_info'])}")
 
 
@@ -53,16 +70,19 @@ def test_convenience_function():
     print("=" * 60)
     
     result = collect_candidate_data(
-        candidate_name="Sundar Pichai",
-        linkedin_url="https://www.linkedin.com/in/sundarpichai",
-        github_username="google",
-        company="Google"
+        candidate_name=CANDIDATE,
+        linkedin_url=LINKEDIN_URL,
+        github_username=GITHUB_USERNAME,
+        company=COMPANY,
+        job_title=JOB,
+        location=LOCATION
     )
     
-    assert result["candidate_name"] == "Sundar Pichai"
+    assert result["candidate_name"] == CANDIDATE
     assert "linkedin" in result
     assert "github" in result
     assert "candidate_search" in result
+    assert "personal_activities" in result
     assert "company_info" in result
     
     print(f"\n✅ Candidate: {result['candidate_name']}")
@@ -88,18 +108,26 @@ def test_individual_methods():
     print(f"✅ GitHub: {bool(github)}")
     
     # Test Candidate Search
-    candidate = service.search_candidate("Test Candidate")
+    candidate = service.search_candidate(CANDIDATE, company=COMPANY, job_title=JOB, location=LOCATION)
     assert "candidate_name" in candidate
+    assert candidate["candidate_name"] == CANDIDATE
     print(f"✅ Candidate Search: {bool(candidate)}")
     
+    # Test Personal Activities
+    activities = service.search_personal_activities(CANDIDATE, company=COMPANY, job_title=JOB)
+    assert "candidate_name" in activities
+    print(f"✅ Personal Activities: {bool(activities)}")
+    
     # Test Company Search
-    company = service.search_company("Test Company")
+    company = service.search_company(COMPANY)
     assert "company_name" in company
+    assert company["company_name"] == COMPANY
     print(f"✅ Company Search: {bool(company)}")
     
     # Test Job Market Search
-    jobs = service.search_job_market("Software Engineer", "San Francisco")
+    jobs = service.search_job_market(JOB, LOCATION)
     assert "job_title" in jobs
+    assert jobs["job_title"] == JOB
     print(f"✅ Job Market Search: {bool(jobs)}")
 
 
@@ -109,9 +137,9 @@ def test_minimal_input():
     print("ACCEPTANCE TEST: Minimal Input")
     print("=" * 60)
     
-    result = collect_candidate_data(candidate_name="John Doe")
+    result = collect_candidate_data(candidate_name=CANDIDATE)
     
-    assert result["candidate_name"] == "John Doe"
+    assert result["candidate_name"] == CANDIDATE
     assert "candidate_search" in result
     assert "collection_timestamp" in result
     
@@ -127,7 +155,7 @@ def test_api_status_tracking():
     
     # Without API keys
     service_no_api = RecruitmentDataCollectionService()
-    result_no_api = service_no_api.collect_candidate_info("Test")
+    result_no_api = service_no_api.collect_candidate_info(CANDIDATE)
     
     assert result_no_api["api_status"]["github"] == "disabled"
     assert result_no_api["api_status"]["linkedin"] == "disabled"
@@ -142,7 +170,7 @@ def test_api_status_tracking():
             github_api_key=github_key,
             linkedin_api_key=linkedin_key
         )
-        result_with_api = service_with_api.collect_candidate_info("Test")
+        result_with_api = service_with_api.collect_candidate_info(CANDIDATE)
         
         if github_key:
             assert result_with_api["api_status"]["github"] == "enabled"
