@@ -105,7 +105,9 @@ def test_linkedin_validation():
 
     api_key = os.getenv("LINKEDIN_API_KEY")
     collector = LinkedInCollector(api_key)
-    result = collector.collect("https://www.linkedin.com/in/shotahirabayashi/")
+    result = collector.collect(
+        f"https://www.linkedin.com/in/{CANDIDATE.replace(' ', '-')}"
+    )
 
     if api_key:
         print(f"✅ API enabled")
@@ -118,40 +120,9 @@ def test_linkedin_validation():
         assert result.get("valid") == True
 
 
-def check_aws_setup():
-    """Check AWS credentials and provide setup guidance"""
-    import subprocess
-    try:
-        result = subprocess.run(
-            ["aws", "sts", "get-caller-identity"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode == 0:
-            print("✅ AWS credentials configured")
-            return True
-        else:
-            print("⚠️  AWS credentials not configured")
-            return False
-    except:
-        print("⚠️  AWS CLI not found or credentials not configured")
-        return False
-
-
 if __name__ == "__main__":
     print("\n🚀 AgentCore Data Collection Test")
     print("=" * 60)
-
-    # Check AWS setup
-    aws_ok = check_aws_setup()
-    if not aws_ok:
-        print("\n⚠️  AgentCore Browser requires AWS setup:")
-        print("   1. Install AWS CLI: https://aws.amazon.com/cli/")
-        print("   2. Configure credentials: aws configure")
-        print("   3. Set IAM permissions for bedrock-agentcore and bedrock:InvokeModel")
-        print("   4. Enable Claude Sonnet 4.0 in Bedrock console")
-        print("\n   Browser-based tests will fail, but API tests will run.\n")
 
     try:
         test_candidate_search()
@@ -166,13 +137,10 @@ if __name__ == "__main__":
 
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
-        if not aws_ok:
-            print("\n💡 Tip: Configure AWS credentials to enable browser-based collectors")
         sys.exit(1)
     except Exception as e:
         print(f"\n❌ Error: {e}")
-        if not aws_ok:
-            print("\n💡 Tip: Configure AWS credentials to enable browser-based collectors")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
