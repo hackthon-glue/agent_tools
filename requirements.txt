@@ -10,8 +10,11 @@ strands-agents==1.6.0
 strands-agents-tools==0.2.5
 bedrock-agentcore==0.1.2
 
-# Browser automation (for data collection)
+# Browser automation (for search results display)
 playwright>=1.40.0
+
+# HTTP requests (for GitHub API)
+requests>=2.31.0
 
 # Package manager
 uv==0.8.13
