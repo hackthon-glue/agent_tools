@@ -1,83 +1,83 @@
 # AI Recruitment Platform - AgentCore Edition
 
-企業内人事システム向け AI エージェントプラットフォーム（AWS Bedrock AgentCore + Strands）
+AI Agent Platform for Enterprise HR Systems (AWS Bedrock AgentCore + Strands)
 
-## 概要
+## Overview
 
-オーケストレーターが 4 つの専門エージェントを統合：
+Orchestrator integrates 4 specialized agents:
 
-**Orchestrator Agent** - メインコーディネーター（全エージェント統合）
+**Orchestrator Agent** - Main coordinator (integrates all agents)
 
-専門エージェント：
+Specialized Agents:
 
-1. **Concierge Agent** - キャリア相談・求人探し（AgentCore Memory）
-2. **Skill Parser Agent** - 履歴書・GitHub 解析（PDF Tools）
-3. **Job Matcher Agent** - 候補者 × 求人マッチング（Knowledge Base）
-4. **Interviewer Copilot Agent** - 面接支援（AgentCore Memory）
+1. **Concierge Agent** - Career consultation & job search (AgentCore Memory)
+2. **Skill Parser Agent** - Resume & GitHub analysis (PDF Tools)
+3. **Job Matcher Agent** - Candidate × Job matching (Knowledge Base)
+4. **Interviewer Copilot Agent** - Interview support (AgentCore Memory)
 
-## アーキテクチャ
+## Architecture
 
 ```
 agents/
-├── orchestrator_agent.py       # メインオーケストレーター
-├── concierge_agent.py          # 対話エージェント（Memory）
-├── skill_parser_agent.py       # スキル解析
-├── job_matcher_agent.py        # マッチング（KB）
-├── interviewer_copilot_agent.py # 面接支援（Memory）
+├── orchestrator_agent.py       # Main orchestrator
+├── concierge_agent.py          # Conversational agent (Memory)
+├── skill_parser_agent.py       # Skill analysis
+├── job_matcher_agent.py        # Matching (KB)
+├── interviewer_copilot_agent.py # Interview support (Memory)
 ├── memory_hook.py              # AgentCore Memory Hook
 └── tools/
-    ├── dynamodb_tools.py       # DynamoDB アクセス
+    ├── dynamodb_tools.py       # DynamoDB access
     ├── kb_tools.py             # Knowledge Base
     ├── memory_tools.py         # AgentCore Memory
-    ├── pdf_tools.py            # PDF解析
-    ├── agent_tools.py          # エージェント呼び出し
+    ├── pdf_tools.py            # PDF parsing
+    ├── agent_tools.py          # Agent invocation
     ├── collector_tools.py      # Web Collectors
-    └── collectors/             # 各種Collector実装
+    └── collectors/             # Collector implementations
         ├── linkedin.py
         ├── github.py
         ├── job_market.py
         └── candidate_search.py
 ```
 
-## セットアップ
+## Setup
 
 ```bash
-# 依存関係インストール
+# Install dependencies
 pip install -r requirements.txt
 
-# 環境変数設定
+# Configure environment variables
 export AWS_REGION=us-west-2
 export AWS_ACCESS_KEY_ID=your_key
 export AWS_SECRET_ACCESS_KEY=your_secret
 ```
 
-## ローカルテスト
+## Local Testing
 
 ```bash
-# 単体テスト
+# Unit tests
 pytest tests/test_agents.py -v
 pytest tests/test_orchestrator.py -v
 
-# 統合テスト
+# Integration tests
 python test_local.py
 
-# 個別エージェントテスト
+# Individual agent tests
 python agents/concierge_agent.py
 ```
 
-## AgentCore Runtime デプロイ
+## AgentCore Runtime Deployment
 
-### 0. Orchestrator Agent (メイン)
+### 0. Orchestrator Agent (Main)
 
 ```bash
 cd agents
 agentcore configure --entrypoint orchestrator_agent.py
 agentcore launch --name orchestrator-agent
 
-# テスト
+# Test
 agentcore invoke '{
   "user_id": "user123",
-  "request": "求人を探しています",
+  "request": "Looking for job opportunities",
   "session_id": "session123"
 }'
 ```
@@ -89,10 +89,10 @@ cd agents
 agentcore configure --entrypoint concierge_agent.py
 agentcore launch --name concierge-agent
 
-# テスト
+# Test
 agentcore invoke '{
   "user_id": "user123",
-  "message": "ソフトウェアエンジニアの求人を探しています",
+  "message": "Looking for software engineer positions",
   "session_id": "session123"
 }'
 ```
@@ -103,7 +103,7 @@ agentcore invoke '{
 agentcore configure --entrypoint skill_parser_agent.py
 agentcore launch --name skill-parser-agent
 
-# テスト
+# Test
 agentcore invoke '{
   "user_id": "user123",
   "resume_pdf": "base64_encoded_pdf_here"
@@ -116,7 +116,7 @@ agentcore invoke '{
 agentcore configure --entrypoint job_matcher_agent.py
 agentcore launch --name job-matcher-agent
 
-# テスト
+# Test
 agentcore invoke '{
   "user_id": "user123",
   "filters": {"location": "Tokyo", "role": "Engineer"}
@@ -129,7 +129,7 @@ agentcore invoke '{
 agentcore configure --entrypoint interviewer_copilot_agent.py
 agentcore launch --name interviewer-copilot-agent
 
-# テスト
+# Test
 agentcore invoke '{
   "user_id": "user123",
   "interview_id": "int123",
@@ -137,7 +137,7 @@ agentcore invoke '{
 }'
 ```
 
-## DynamoDB テーブル構成
+## DynamoDB Table Schema
 
 ### recruitment_users
 
@@ -157,55 +157,55 @@ job_id (PK) | title | company | location | requirements | description
 user_id (PK) | username | repos | languages | contributions
 ```
 
-## Knowledge Base 構成
+## Knowledge Base Configuration
 
-評価基準ドキュメント：
+Evaluation criteria documents:
 
-- スキルマッチング基準
-- 経験年数評価
-- 文化適合性指標
+- Skill matching criteria
+- Years of experience evaluation
+- Cultural fit indicators
 
-## AgentCore Memory 機能
+## AgentCore Memory Features
 
-### Memory Hook 統合
+### Memory Hook Integration
 
-- **MemoryHook**: Strands HookProvider 実装
-- **on_agent_initialized**: 過去の会話履歴をロード
-- **on_message_added**: 新しいメッセージを自動保存
+- **MemoryHook**: Strands HookProvider implementation
+- **on_agent_initialized**: Load past conversation history
+- **on_message_added**: Auto-save new messages
 
-### セッション設定
+### Session Configuration
 
-- **Concierge Agent**: 1 時間セッション（会話履歴）
-- **Interviewer Copilot**: 30 分セッション（面接コンテキスト）
-- **デフォルト K 値**: 直近 3 ターンの会話を取得
+- **Concierge Agent**: 1-hour session (conversation history)
+- **Interviewer Copilot**: 30-minute session (interview context)
+- **Default K value**: Retrieve last 3 conversation turns
 
-## 技術スタック
+## Tech Stack
 
-### コアフレームワーク
+### Core Framework
 
 - **AWS Bedrock AgentCore**: Runtime, Memory, Gateway
-- **Strands**: エージェントフレームワーク
-- **Claude 4.5 Sonnet v2**: LLM モデル (us.anthropic.claude-sonnet-4-5-20250929-v1:0)
+- **Strands**: Agent framework
+- **Claude 3.5 Sonnet v2**: LLM model (us.anthropic.claude-3-5-sonnet-20241022-v2:0)
 
-### ツール統合
+### Tool Integration
 
-- **Sequential Thinking**: 複雑な推論タスク用思考ツール
-- **AgentCore Memory**: セッション管理・会話履歴保存
-- **Context7**: ライブラリドキュメント検索
-- **AWS Docs**: AWS 公式ドキュメント検索
+- **Sequential Thinking**: Reasoning tool for complex tasks
+- **AgentCore Memory**: Session management & conversation history
+- **Context7**: Library documentation search
+- **AWS Docs**: AWS official documentation search
 
-### データストア
+### Data Stores
 
-- **DynamoDB**: ユーザ・求人・GitHub プロファイル
-- **Bedrock Knowledge Base**: 評価基準・マッチングルール
+- **DynamoDB**: Users, jobs, GitHub profiles
+- **Bedrock Knowledge Base**: Evaluation criteria & matching rules
 
 ### Web Collectors
 
-- **LinkedIn Collector**: プロフィール・求人情報
-- **GitHub Collector**: リポジトリ・コントリビューション
-- **Job Market Collector**: 求人市場データ
-- **Candidate Search Collector**: 候補者検索
+- **LinkedIn Collector**: Profiles & job postings
+- **GitHub Collector**: Repositories & contributions
+- **Job Market Collector**: Job market data
+- **Candidate Search Collector**: Candidate search
 
-## ライセンス
+## License
 
 MIT

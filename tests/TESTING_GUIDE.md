@@ -1,146 +1,155 @@
 # Testing Guide - AI Recruitment Platform
 
-## テスト構成
+## Test Structure
 
-### 📁 ディレクトリ構造
+### 📁 Directory Structure
 
 ```
 tests/
-├── unit/              # 単体テスト（モック使用）
-├── integration/       # 結合テスト（実AWS接続）
-├── acceptance/        # 受け入れテスト（E2E）
-├── conftest.py        # 自動モック設定
-├── pytest.ini         # pytest設定
-└── TESTING_GUIDE.md   # このファイル
+├── unit/              # Unit tests (with mocks)
+├── integration/       # Integration tests (real AWS connection)
+├── acceptance/        # Acceptance tests (E2E)
+├── conftest.py        # Auto-mock configuration
+├── pytest.ini         # pytest configuration
+└── TESTING_GUIDE.md   # This file
 ```
 
-## 🎯 テストレベル
+## 🎯 Test Levels
 
-### 1. Unit Tests (単体テスト)
-- **場所**: `tests/unit/`
-- **目的**: 個別機能の高速検証
-- **依存**: すべてモック（AWS認証不要）
-- **実行**: `pytest tests/unit -v`
-- **速度**: ⚡ 高速 (~1秒)
-- **カバレッジ**: 29テスト
+### 1. Unit Tests
 
-### 2. Integration Tests (結合テスト)
-- **場所**: `tests/integration/`
-- **目的**: 実AWS接続の検証
-- **依存**: AWS認証情報必須
-- **実行**: `pytest -m integration -v`
-- **速度**: 🐢 中速 (~5-10秒)
-- **カバレッジ**: 3テスト (DynamoDB, KB, Memory)
+- **Location**: `tests/unit/`
+- **Purpose**: Fast validation of individual functions
+- **Dependencies**: All mocked (no AWS credentials required)
+- **Execution**: `pytest tests/unit -v`
+- **Speed**: ⚡ Fast (~1 second)
+- **Coverage**: 29 tests
 
-### 3. Acceptance Tests (受け入れテスト)
-- **場所**: `tests/acceptance/`
-- **目的**: エージェント全体の動作検証
-- **依存**: 全AWSリソース + AgentCore
-- **実行**: `pytest -m acceptance -v`
-- **速度**: 🐌 低速 (~10-30秒)
-- **カバレッジ**: 5テスト (全エージェント)
+### 2. Integration Tests
 
-## 🚀 実行方法
+- **Location**: `tests/integration/`
+- **Purpose**: Validate real AWS connections
+- **Dependencies**: AWS credentials required
+- **Execution**: `pytest -m integration -v`
+- **Speed**: 🐢 Medium (~5-10 seconds)
+- **Coverage**: 3 tests (DynamoDB, KB, Memory)
+
+### 3. Acceptance Tests
+
+- **Location**: `tests/acceptance/`
+- **Purpose**: Validate entire agent workflows
+- **Dependencies**: All AWS resources + AgentCore
+- **Execution**: `pytest -m acceptance -v`
+- **Speed**: 🐌 Slow (~10-30 seconds)
+- **Coverage**: 5 tests (all agents)
+
+## 🚀 Execution Methods
 
 ```bash
-# デフォルト（単体テストのみ、AWS不要）
+# Default (unit tests only, no AWS required)
 pytest
 
-# 単体テストのみ（明示的）
+# Unit tests only (explicit)
 pytest tests/unit -v
 
-# 結合テスト（AWS認証必須）
+# Integration tests (AWS credentials required)
 pytest -m integration -v
 
-# 受け入れテスト（全環境必須）
+# Acceptance tests (full environment required)
 pytest -m acceptance -v
 
-# すべてのテスト（AWS認証必須）
+# All tests (AWS credentials required)
 pytest -m "" -v
 
-# カバレッジ付き
+# With coverage
 pytest tests/unit --cov=agents --cov-report=html
 ```
 
-## 🔧 環境設定
+## 🔧 Environment Setup
 
-### 単体テスト
+### Unit Tests
+
 ```bash
-# AWS認証不要（conftest.pyが自動モック）
+# No AWS credentials required (conftest.py auto-mocks)
 pytest
 ```
 
-### 結合・受け入れテスト
+### Integration & Acceptance Tests
+
 ```bash
-# AWS認証情報設定
+# Configure AWS credentials
 export AWS_REGION=us-west-2
 export AWS_ACCESS_KEY_ID=your_key
 export AWS_SECRET_ACCESS_KEY=your_secret
 
-# または AWS SSO
+# Or use AWS SSO
 aws sso login
 
-# オプション環境変数
+# Optional environment variables
 export KNOWLEDGE_BASE_ID=your_kb_id
 export MEMORY_ID=your_memory_id
 ```
 
-## 🔄 自動モック機能
+## 🔄 Auto-Mock Features
 
-`tests/conftest.py`が以下を自動モック:
-- `boto3.client` - AWS SDK呼び出し
-- `bedrock_agentcore.memory.MemoryClient` - Memory初期化
-- `agents.tools.memory_tools.get_conversation_history` - 会話履歴取得
+`tests/conftest.py` automatically mocks:
 
-**メリット**: AWS認証なしで全単体テストが実行可能
+- `boto3.client` - AWS SDK calls
+- `bedrock_agentcore.memory.MemoryClient` - Memory initialization
+- `agents.tools.memory_tools.get_conversation_history` - Conversation history retrieval
 
-## 🏷️ pytest マーカー
+**Benefit**: All unit tests run without AWS credentials
+
+## 🏷️ pytest Markers
 
 ```python
-@pytest.mark.unit          # 単体テスト（デフォルト実行）
-@pytest.mark.integration   # 結合テスト（明示的実行）
-@pytest.mark.acceptance    # 受け入れテスト（明示的実行）
+@pytest.mark.unit          # Unit test (runs by default)
+@pytest.mark.integration   # Integration test (explicit execution)
+@pytest.mark.acceptance    # Acceptance test (explicit execution)
 ```
 
-## 🔄 CI/CD推奨フロー
+## 🔄 Recommended CI/CD Flow
 
-1. **PR作成時**: `pytest` (単体テストのみ、高速)
-2. **mainマージ時**: `pytest -m "" -v` (全テスト)
-3. **リリース時**: `pytest -m acceptance -v` (E2E検証)
+1. **On PR creation**: `pytest` (unit tests only, fast)
+2. **On merge to main**: `pytest -m "" -v` (all tests)
+3. **On release**: `pytest -m acceptance -v` (E2E validation)
 
-## 💡 ベストプラクティス
+## 💡 Best Practices
 
-- 開発中は `pytest` で高速検証（AWS不要）
-- AWS接続確認は `pytest -m integration -v`
-- デプロイ前は `pytest -m acceptance -v` で最終確認
-- `conftest.py`により単体テストは常にAWS不要
+- During development: `pytest` for fast validation (no AWS required)
+- AWS connection check: `pytest -m integration -v`
+- Pre-deployment: `pytest -m acceptance -v` for final validation
+- `conftest.py` ensures unit tests never require AWS
 
-## 🐛 トラブルシューティング
+## 🐛 Troubleshooting
 
-### AWS SSO Token Expired エラー
+### AWS SSO Token Expired Error
+
 ```bash
-# 単体テストの場合 → 問題なし（モック使用）
+# For unit tests → No problem (uses mocks)
 pytest tests/unit -v
 
-# 結合/受け入れテストの場合 → AWS再認証
+# For integration/acceptance tests → Re-authenticate
 aws sso login
 pytest -m integration -v
 ```
 
-### テストが見つからない
+### Tests Not Found
+
 ```bash
-# pytest.iniの設定確認
+# Check pytest.ini configuration
 cat tests/pytest.ini
 
-# テスト検出確認
+# Verify test discovery
 pytest --collect-only
 ```
 
-### モックが効かない
+### Mocks Not Working
+
 ```bash
-# conftest.pyの存在確認
+# Verify conftest.py exists
 ls tests/conftest.py
 
-# キャッシュクリア
+# Clear cache
 pytest --cache-clear
 ```
