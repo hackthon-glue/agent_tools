@@ -303,6 +303,57 @@ agentcore configure --entrypoint orchestrator_agent.py
 # Select "Press Enter to create new memory" when prompted
 ```
 
+**[All Scenarios] AWS_PROFILE error in AgentCore Runtime**
+
+```bash
+# Error: The config profile (admin) could not be found
+# Cause: AWS_PROFILE in .env is not needed for AgentCore Runtime
+
+# Solution: Remove AWS_PROFILE from deployment
+# The script now automatically excludes AWS_PROFILE
+./scripts/setup/07-deploy-agentcore.sh
+
+# Or manually remove from .env (for local testing only)
+# Comment out: # AWS_PROFILE=admin
+```
+
+**[All Scenarios] AgentCore Memory AccessDeniedException**
+
+```bash
+# Error: User is not authorized to perform: bedrock-agentcore:ListEvents
+# Cause: IAM role missing ListEvents permission for AgentCore Memory
+
+# Solution: Update IAM role with missing permissions
+./scripts/setup/01-create-iam-role.sh
+
+# Then redeploy
+./scripts/setup/07-deploy-agentcore.sh
+```
+
+**[All Scenarios] Cross-region Bedrock model access denied**
+
+```bash
+# Error: not authorized to perform: bedrock:InvokeModelWithResponseStream on resource: arn:aws:bedrock:us-east-1::foundation-model/*
+# Cause: IAM policy restricts models to deployment region only
+
+# Solution: Update IAM role to allow cross-region model access
+./scripts/setup/01-create-iam-role.sh
+
+# Then redeploy
+./scripts/setup/07-deploy-agentcore.sh
+```
+
+**[All Scenarios] Agent tool invocation missing required arguments**
+
+```bash
+# Error: Tool invocation fails with missing argument errors
+# Cause: Orchestrator calling agent tools without required parameters
+
+# Solution: Update agent code and redeploy
+cd agents
+agentcore launch
+```
+
 ---
 
 ## Environment Variables

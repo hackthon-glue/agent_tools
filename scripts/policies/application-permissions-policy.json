@@ -39,6 +39,7 @@
       "Effect": "Allow",
       "Action": [
         "bedrock-agentcore:CreateEvent",
+        "bedrock-agentcore:ListEvents",
         "bedrock-agentcore:GetLastKTurns",
         "bedrock-agentcore:GetMemory",
         "bedrock-agentcore:CreateMemory"
@@ -59,12 +60,12 @@
         "bedrock:InvokeModelWithResponseStream"
       ],
       "Resource": [
-        "arn:aws:bedrock:${AWS_REGION}::foundation-model/us.anthropic.claude-*",
-        "arn:aws:bedrock:${AWS_REGION}::foundation-model/anthropic.claude-*",
-        "arn:aws:bedrock:${AWS_REGION}::foundation-model/us.amazon.nova-*",
-        "arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.nova-*",
-        "arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.rerank-*",
-        "arn:aws:bedrock:${AWS_REGION}::foundation-model/cohere.rerank-*",
+        "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-*",
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-*",
+        "arn:aws:bedrock:*::foundation-model/us.amazon.nova-*",
+        "arn:aws:bedrock:*::foundation-model/amazon.nova-*",
+        "arn:aws:bedrock:*::foundation-model/amazon.rerank-*",
+        "arn:aws:bedrock:*::foundation-model/cohere.rerank-*",
         "arn:aws:bedrock:${AWS_REGION}:${AWS_ACCOUNT_ID}:inference-profile/*",
         "arn:aws:bedrock:${AWS_REGION}:${AWS_ACCOUNT_ID}:application-inference-profile/*"
       ]

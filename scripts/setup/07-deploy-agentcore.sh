@@ -39,11 +39,12 @@ echo "Creating/updating execution role..."
 chmod +x "$SCRIPT_DIR/01-create-iam-role.sh"
 ROLE_ARN=$("$SCRIPT_DIR/01-create-iam-role.sh")
 
-# Build ENV_FLAGS
+# Build ENV_FLAGS (exclude AWS_PROFILE for AgentCore Runtime)
 ENV_FLAGS=""
 while IFS='=' read -r key value; do
     [[ "$key" =~ ^#.*$ ]] && continue
     [[ -z "$key" ]] && continue
+    [[ "$key" == "AWS_PROFILE" ]] && continue  # Skip AWS_PROFILE
     if [ -n "$value" ]; then
         ENV_FLAGS="$ENV_FLAGS --env $key=$value"
     fi
