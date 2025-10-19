@@ -25,6 +25,9 @@ htmlcov/
 
 # AWS
 .aws/
+.bedrock_agentcore/
+.bedrock_agentcore.yaml
+.dockerignore
 
 # Data
 data/
