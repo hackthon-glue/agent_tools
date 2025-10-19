@@ -2,12 +2,13 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Load .env
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    export $(grep -v '^#' "$PROJECT_ROOT/.env" | xargs)
 else
-    echo "Error: .env file not found"
+    echo "Error: .env file not found in $PROJECT_ROOT"
     exit 1
 fi
 
@@ -19,8 +20,8 @@ fi
 
 # Create execution role
 echo "Creating/updating execution role..."
-chmod +x "$SCRIPT_DIR/scripts/create-execution-role.sh"
-ROLE_ARN=$("$SCRIPT_DIR/scripts/create-execution-role.sh")
+chmod +x "$SCRIPT_DIR/01-create-iam-role.sh"
+ROLE_ARN=$("$SCRIPT_DIR/01-create-iam-role.sh")
 
 # Build ENV_FLAGS
 ENV_FLAGS=""
@@ -30,9 +31,9 @@ while IFS='=' read -r key value; do
     if [ -n "$value" ]; then
         ENV_FLAGS="$ENV_FLAGS --env $key=$value"
     fi
-done < .env
+done < "$PROJECT_ROOT/.env"
 
-cd agents
+cd "$PROJECT_ROOT/agents"
 
 # Configure with execution role
 echo "Configuring orchestrator agent..."
