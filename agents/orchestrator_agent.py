@@ -35,7 +35,13 @@ def invoke(payload, context):
     if hasattr(context, "session_id"):
         agent.state.set("session_id", context.session_id)
 
-    response = agent(payload.get("request", "Hello"))
+    user_id = payload.get("user_id", "guest")
+    request = payload.get("request", "Hello")
+    
+    # Include user_id in the prompt for context
+    prompt = f"User ID: {user_id}\nRequest: {request}"
+    
+    response = agent(prompt)
     return response.message["content"][0]["text"]
 
 
