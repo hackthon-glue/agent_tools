@@ -7,6 +7,21 @@
 - AgentCore CLI installed
 - pytest installed
 
+## Quick Reference
+
+```
+00-setup-all.sh              ← Master script (Scenario 2 only)
+  ├─ 01-create-iam-role.sh
+  ├─ 02-create-dynamodb.sh
+  ├─ 03-create-s3-kb.sh
+  ├─ 04-create-opensearch.sh
+  └─ 05-create-knowledge-base.sh
+
+06-load-test-data.py         ← Load test data (both scenarios)
+07-deploy-agentcore.sh       ← Deploy to AgentCore (both scenarios)
+99-cleanup.sh                ← Delete all resources
+```
+
 ## Choose Your Scenario
 
 | Scenario       | Use Case            | Infrastructure Created          |
@@ -54,15 +69,30 @@ cp .env.example .env
 **Manual Alternative:**
 
 ```bash
-# Phase 1: Independent resources
+# Phase 1: Independent resources (can run in parallel)
 ./scripts/setup/01-create-iam-role.sh
 ./scripts/setup/02-create-dynamodb.sh
 ./scripts/setup/03-create-s3-kb.sh
 
-# Phase 2: Dependent resources
+# Phase 2: Dependent resources (must run sequentially)
 ./scripts/setup/04-create-opensearch.sh     # Requires: 01
 ./scripts/setup/05-create-knowledge-base.sh # Requires: 01, 03, 04
 ```
+
+---
+
+## Script Dependencies
+
+| Script | Depends On | Creates | Used In |
+|--------|-----------|---------|----------|
+| 01-create-iam-role.sh | None | IAM Role | Both scenarios |
+| 02-create-dynamodb.sh | None | DynamoDB Tables | Both scenarios |
+| 03-create-s3-kb.sh | None | S3 Bucket + Docs | Scenario 2 only |
+| 04-create-opensearch.sh | 01 | OpenSearch Collection | Scenario 2 only |
+| 05-create-knowledge-base.sh | 01, 03, 04 | Knowledge Base | Scenario 2 only |
+| 06-load-test-data.py | 02 | Test Data | Both scenarios |
+| 07-deploy-agentcore.sh | 01-06 | Deployed Agent | Both scenarios |
+| 99-cleanup.sh | None | Cleanup | Both scenarios |
 
 ---
 
@@ -79,6 +109,13 @@ python scripts/setup/06-load-test-data.py
 ```bash
 ./scripts/setup/07-deploy-agentcore.sh
 ```
+
+**What this script does:**
+- Auto-populates AWS_ACCOUNT_ID and AWS_REGION in .env if missing
+- Creates/updates IAM execution role
+- Excludes AWS_PROFILE from AgentCore Runtime environment
+- Configures AgentCore with orchestrator_agent.py entrypoint
+- Launches deployment with all .env variables
 
 #### 2.1 Interactive Configuration
 
