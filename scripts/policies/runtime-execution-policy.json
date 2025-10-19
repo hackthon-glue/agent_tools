@@ -1,0 +1,73 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DynamoDBAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:${AWS_REGION}:${AWS_ACCOUNT_ID}:table/${DYNAMODB_USERS_TABLE}",
+        "arn:aws:dynamodb:${AWS_REGION}:${AWS_ACCOUNT_ID}:table/${DYNAMODB_JOBS_TABLE}",
+        "arn:aws:dynamodb:${AWS_REGION}:${AWS_ACCOUNT_ID}:table/${DYNAMODB_GITHUB_TABLE}"
+      ]
+    },
+    {
+      "Sid": "KnowledgeBaseAccess",
+      "Effect": "Allow",
+      "Action": ["bedrock:Retrieve", "bedrock:Rerank"],
+      "Resource": "arn:aws:bedrock:${AWS_REGION}:${AWS_ACCOUNT_ID}:knowledge-base/*"
+    },
+    {
+      "Sid": "KnowledgeBaseRAG",
+      "Effect": "Allow",
+      "Action": ["bedrock:RetrieveAndGenerate"],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "${AWS_REGION}"
+        }
+      }
+    },
+    {
+      "Sid": "AgentCoreMemory",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock-agentcore:CreateEvent",
+        "bedrock-agentcore:GetLastKTurns",
+        "bedrock-agentcore:GetMemory",
+        "bedrock-agentcore:CreateMemory"
+      ],
+      "Resource": "arn:aws:bedrock-agentcore:${AWS_REGION}:${AWS_ACCOUNT_ID}:memory/*"
+    },
+    {
+      "Sid": "TextractAccess",
+      "Effect": "Allow",
+      "Action": ["textract:AnalyzeDocument", "textract:DetectDocumentText"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "BedrockModelAccess",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:${AWS_REGION}::foundation-model/us.anthropic.claude-*",
+        "arn:aws:bedrock:${AWS_REGION}::foundation-model/anthropic.claude-*",
+        "arn:aws:bedrock:${AWS_REGION}::foundation-model/us.amazon.nova-*",
+        "arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.nova-*",
+        "arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.rerank-*",
+        "arn:aws:bedrock:${AWS_REGION}::foundation-model/cohere.rerank-*",
+        "arn:aws:bedrock:${AWS_REGION}:${AWS_ACCOUNT_ID}:inference-profile/*",
+        "arn:aws:bedrock:${AWS_REGION}:${AWS_ACCOUNT_ID}:application-inference-profile/*"
+      ]
+    }
+  ]
+}
