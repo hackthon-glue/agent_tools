@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/../utils/common.sh"
 
-echo "Creating IAM role: $ROLE_NAME"
+echo "Creating IAM role: $ROLE_NAME" >&2
 
 # Generate policies from templates
 chmod +x "$SCRIPT_DIR/../utils/generate-template.py"
@@ -13,7 +13,7 @@ chmod +x "$SCRIPT_DIR/../utils/generate-template.py"
 # Create role
 aws iam create-role \
     --role-name $ROLE_NAME \
-    --assume-role-policy-document file:///tmp/policies/trust-policy.json 2>/dev/null || echo "Role exists"
+    --assume-role-policy-document file:///tmp/policies/trust-policy.json 2>/dev/null || echo "Role exists" >&2
 
 # Attach base runtime policy
 aws iam put-role-policy \
@@ -27,5 +27,5 @@ aws iam put-role-policy \
     --policy-name ApplicationPermissions \
     --policy-document file:///tmp/policies/application-permissions-policy.json
 
-echo "✅ IAM role created: arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ROLE_NAME}"
+echo "✅ IAM role created: arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ROLE_NAME}" >&2
 echo "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ROLE_NAME}"
