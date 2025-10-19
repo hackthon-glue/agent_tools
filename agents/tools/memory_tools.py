@@ -1,6 +1,6 @@
 """Memory tools for AgentCore Memory integration"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from typing import Dict, List, Any, Optional
 from .base_tool import DataSourceTool
@@ -31,7 +31,7 @@ class MemoryTool(DataSourceTool):
         event_timestamp: Optional[datetime] = None,
     ) -> Dict:
         if event_timestamp is None:
-            event_timestamp = datetime.utcnow()
+            event_timestamp = datetime.now(timezone.utc)
 
         response = self.client.create_event(
             memory_id=memory_id,
@@ -39,9 +39,8 @@ class MemoryTool(DataSourceTool):
             session_id=session_id,
             event_timestamp=event_timestamp,
             messages=messages,
-            client_token=str(uuid.uuid4()),
         )
-        return response["event"]
+        return response.get("event", response)
 
     def _get_last_k_turns(
         self, memory_id: str, actor_id: str, session_id: str, k: int = 3

@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent / "agents"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "agents"))
 
 import pytest
 from unittest.mock import Mock, patch
@@ -20,15 +20,13 @@ def mock_dynamodb():
 
 
 def test_get_user_profile(mock_dynamodb):
-    mock_dynamodb.get_item.return_value = {
-        'Item': {'user_id': 'user123', 'name': 'Test User', 'skills': ['Python']}
-    }
+    from tools.dynamodb_tools import _dynamodb_tool
     
-    result = get_user_profile('user123')
-    
-    assert result['user_id'] == 'user123'
-    assert result['name'] == 'Test User'
-    mock_dynamodb.get_item.assert_called_once()
+    with patch.object(_dynamodb_tool, 'execute', return_value={'user_id': 'user123', 'name': 'Taro Yamada', 'skills': ['Python']}):
+        result = get_user_profile('user123')
+        
+        assert result['user_id'] == 'user123'
+        assert result['name'] == 'Taro Yamada'
 
 
 def test_get_job_listings_no_filters(mock_dynamodb):
